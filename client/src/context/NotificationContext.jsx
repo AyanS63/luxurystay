@@ -16,7 +16,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 
 const NotificationContext = createContext();
 
-import axios from 'axios';
+import api from '../utils/api';
 
 export const NotificationProvider = ({ children }) => {
   const { user } = useAuth();
@@ -34,9 +34,7 @@ export const NotificationProvider = ({ children }) => {
 
   const fetchNotifications = async () => {
     try {
-        const res = await axios.get('http://localhost:5000/api/notifications', {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await api.get('/notifications');
         setNotifications(res.data);
         setUnreadCount(res.data.filter(n => !n.isRead).length);
     } catch (err) {
@@ -103,9 +101,7 @@ export const NotificationProvider = ({ children }) => {
   const markAsRead = async (id) => {
       try {
           // If id is provided, mark one. Else mark all.
-          await axios.put('http://localhost:5000/api/notifications/read', { id }, {
-             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-          });
+          await api.put('/notifications/read', { id });
 
           if (id) {
               setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
@@ -121,9 +117,7 @@ export const NotificationProvider = ({ children }) => {
 
   const clearNotification = async (id) => {
       try {
-          await axios.delete(`http://localhost:5000/api/notifications/${id}`, {
-             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-          });
+          await api.delete(`/notifications/${id}`);
           
           const notif = notifications.find(n => n._id === id);
           if (notif && !notif.isRead) {
@@ -137,9 +131,7 @@ export const NotificationProvider = ({ children }) => {
 
   const clearAllNotifications = async () => {
     try {
-        await axios.delete('http://localhost:5000/api/notifications', {
-             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
+        await api.delete('/notifications');
         setNotifications([]);
         setUnreadCount(0);
     } catch (err) {
